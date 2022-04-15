@@ -1,3 +1,4 @@
+import { BorderlessButton } from 'react-native-gesture-handler';
 import { Transactions } from './../../screens/Dashboard/styles';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { Feather } from '@expo/vector-icons';
@@ -12,6 +13,7 @@ export const Container = styled.View`
     background-color: ${({ theme }) => theme.colors.shape};
 
     padding: 17px 24px;
+    padding-right: 0;
     margin-bottom: 16px;
 `
 
@@ -59,9 +61,17 @@ export const CategoryName = styled.Text`
 
 `
 
+export const DateContainer = styled.View`
+    flex-direction: row;
+`
+
 export const Date = styled.Text`
     font-size: ${RFValue(14)}px;
     font-family: ${({ theme }) => theme.fonts.regular};
 
     color: ${({ theme }) => theme.colors.text};
+    margin-right: 10px;
+`
+
+export const TrashButton = styled(BorderlessButton)`
 `

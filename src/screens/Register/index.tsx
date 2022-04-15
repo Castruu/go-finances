@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, TouchableWithoutFeedback, Keyboard, Alert } from 'react-native';
+import { Modal, TouchableWithoutFeedback, Keyboard, Alert, Platform } from 'react-native';
 import { yupResolver } from '@hookform/resolvers/yup'
 import * as yup from 'yup'
 import AsyncStorage from '@react-native-async-storage/async-storage'
@@ -46,16 +46,16 @@ export const Register = () => {
   const [transactionType, setTransactionType] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
-  const {user} = useAuth()
+  const { user } = useAuth()
 
   const [category, setCategory] = useState({
     key: 'category',
     name: 'Categoria',
   });
 
-  
+
   const navigation = useNavigation<RegisterNavigationProps>()
-  
+
   const {
     control,
     handleSubmit,
@@ -64,28 +64,28 @@ export const Register = () => {
   } = useForm({
     resolver: yupResolver(formSchema)
   })
-  
+
   function handleTransactionTypeSelect(type: 'positive' | 'negative') {
     setTransactionType(type)
   }
-  
+
   function handleOpenSelectCategoryModal() {
     setCategoryModalOpen(true)
   }
-  
+
   function handleCloseSelectCategoryModal() {
     setCategoryModalOpen(false)
   }
-  
+
   async function handleRegister(form: FormData) {
     if (!transactionType) {
       return Alert.alert('Selecione o tipo da transação!')
     }
-    
+
     if (category.key === 'category') {
       return Alert.alert('Selecione a categoria!')
     }
-    
+
     const newTransaction = {
       id: String(uuid.v4()),
       name: form.name,
@@ -94,13 +94,13 @@ export const Register = () => {
       category: category.key,
       date: new Date()
     }
-    
+
     try {
-      
+
       const dataKey = `@gofinances:transactions_user:${user.id}`
       const data = await AsyncStorage.getItem(dataKey)
       const currentData = data ? JSON.parse(data) : []
-      
+
       const formattedData = [
         ...currentData,
         newTransaction
@@ -115,7 +115,7 @@ export const Register = () => {
         key: 'category',
         name: 'Categoria',
       })
-      
+
       navigation.navigate('Listagem')
     } catch (error) {
       console.log(error)
@@ -141,7 +141,7 @@ export const Register = () => {
           <InputForm
             name='amount'
             placeholder='Preço'
-            keyboardType='numeric'
+            keyboardType={Platform.OS === 'ios' ? 'numbers-and-punctuation' : 'numeric'}
             control={control}
             error={errors.amount && errors.amount.message}
 

@@ -54,7 +54,7 @@ export function Dashboard() {
 
     function getFirstAndLastDate(transactions: DataListProps[]) {
         const dataArray = transactions.map(transactions => new Date(transactions.date).getTime())
-        if(dataArray.length === 0) return 'Nenhum registro'
+        if (dataArray.length === 0) return 'Nenhum registro'
         const firstTransaction = new Date(Math.min.apply(Math, dataArray))
         const lastTransaction = new Date(Math.max.apply(Math, dataArray))
 
@@ -77,7 +77,6 @@ export function Dashboard() {
         const dataKey = `@gofinances:transactions_user:${user.id}`
         const response = await AsyncStorage.getItem(dataKey);
         const transactions = response ? JSON.parse(response) : []
-
         let entriesSum = 0;
         let outcomeSum = 0;
 
@@ -126,6 +125,15 @@ export function Dashboard() {
         setIsLoading(false)
     }
 
+    async function handleDelete(cardId: string) {
+        setIsLoading(true)
+        const response = await AsyncStorage.getItem(`@gofinances:transactions_user:${user.id}`);
+        const transactions : DataListProps[] = JSON.parse(response!);
+        const filteredTransactions = transactions.filter(it => it.id !== cardId)
+        await AsyncStorage.setItem(`@gofinances:transactions_user:${user.id}`, JSON.stringify(filteredTransactions))
+        loadTransactions();
+    }
+
     useFocusEffect(
         useCallback(() => {
             loadTransactions()
@@ -133,30 +141,29 @@ export function Dashboard() {
 
     return (
         <Container>
+            <Header>
+                <UserWrapper>
+                    <UserInfo>
+                        <Photo
+                            source={{ uri: user.photo }}
+                        />
+
+                        <User>
+                            <UserGreeting>Olá, </UserGreeting>
+                            <UserName>{user.name}</UserName>
+                        </User>
+
+                    </UserInfo>
+
+                    <LogoutButton onPress={signOut}>
+                        <Icon name='power' />
+                    </LogoutButton>
+                </UserWrapper>
+            </Header>
             {isLoading ?
                 <LoadIndicator />
                 :
                 <>
-                    <Header>
-                        <UserWrapper>
-                            <UserInfo>
-                                <Photo
-                                    source={{ uri: user.photo }}
-                                />
-
-                                <User>
-                                    <UserGreeting>Olá, </UserGreeting>
-                                    <UserName>{user.name}</UserName>
-                                </User>
-
-                            </UserInfo>
-
-                            <LogoutButton onPress={signOut}>
-                                <Icon name='power' />
-                            </LogoutButton>
-                        </UserWrapper>
-                    </Header>
-
                     <HighlightCards
                     >
                         <HighlightCard
@@ -186,7 +193,7 @@ export function Dashboard() {
                             data={transactions}
                             keyExtractor={item => item.id}
                             renderItem={({ item }) =>
-                                <TransactionCard data={item} />
+                                <TransactionCard data={item} handleDelete={() => handleDelete(item.id)} />
                             }
                         />
 
