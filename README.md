@@ -18,3 +18,7 @@ GoFinances is a React Native application made with Rocketseat Ignite course. It 
 
 https://user-images.githubusercontent.com/66087703/163627241-4e696a10-2a68-461d-ace1-157894ec7c81.mp4
 
+
+#How to use?
+
+Install Expo CLI, Yarn and the required dependencies. Then edit the .env.example file to your _Google Credentials Informations_ (remove the .example from the file name), and run it
