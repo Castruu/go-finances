@@ -22,6 +22,7 @@ import { CategorySelectButton } from '../../components/Forms/CategorySelectButto
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { AppRoutesParamList } from '../../routes/app.routes';
 import Header from '../../components/Header';
+import { useAuth } from '../../hooks/auth';
 
 interface FormData {
   [name: string]: any;
@@ -45,15 +46,16 @@ export const Register = () => {
   const [transactionType, setTransactionType] = useState('');
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
 
+  const {user} = useAuth()
+
   const [category, setCategory] = useState({
     key: 'category',
     name: 'Categoria',
   });
 
-  const dataKey = '@gofinances:transactions'
-
+  
   const navigation = useNavigation<RegisterNavigationProps>()
-
+  
   const {
     control,
     handleSubmit,
@@ -62,28 +64,28 @@ export const Register = () => {
   } = useForm({
     resolver: yupResolver(formSchema)
   })
-
+  
   function handleTransactionTypeSelect(type: 'positive' | 'negative') {
     setTransactionType(type)
   }
-
+  
   function handleOpenSelectCategoryModal() {
     setCategoryModalOpen(true)
   }
-
+  
   function handleCloseSelectCategoryModal() {
     setCategoryModalOpen(false)
   }
-
+  
   async function handleRegister(form: FormData) {
     if (!transactionType) {
       return Alert.alert('Selecione o tipo da transação!')
     }
-
+    
     if (category.key === 'category') {
       return Alert.alert('Selecione a categoria!')
     }
-
+    
     const newTransaction = {
       id: String(uuid.v4()),
       name: form.name,
@@ -92,19 +94,20 @@ export const Register = () => {
       category: category.key,
       date: new Date()
     }
-
+    
     try {
-
+      
+      const dataKey = `@gofinances:transactions_user:${user.id}`
       const data = await AsyncStorage.getItem(dataKey)
       const currentData = data ? JSON.parse(data) : []
-
+      
       const formattedData = [
         ...currentData,
         newTransaction
       ]
 
       await AsyncStorage.setItem(dataKey, JSON.stringify(formattedData))
-      Alert.alert('Alimento cadastrado com sucesso!')
+      Alert.alert('Cadastrado com sucesso!')
 
       reset();
       setTransactionType('')
@@ -112,11 +115,11 @@ export const Register = () => {
         key: 'category',
         name: 'Categoria',
       })
-
+      
       navigation.navigate('Listagem')
     } catch (error) {
       console.log(error)
-      Alert.alert('Não foi possível cadastrar o aliment!')
+      Alert.alert('Não foi possível registrar!')
     }
   }
 

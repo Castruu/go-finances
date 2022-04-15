@@ -1,7 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import Header from '../../components/Header';
 import HistoryCard from '../../components/HistoryCard';
-import { ActivityIndicator } from 'react-native';
 
 import { categories } from '../../utils/categories';
 
@@ -13,7 +12,6 @@ import {
     MonthTitle,
     CardWrapper,
     ChartContainer,
-    LoadContainer
 } from './styles';
 import { useFocusEffect } from '@react-navigation/native';
 import { TransactionCardProps } from '../../components/TransactionCard';
@@ -24,6 +22,8 @@ import { useTheme } from 'styled-components';
 import MonthSelect from '../../components/MonthSelect';
 import { addMonths, format, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import LoadIndicator from '../../components/LoadIndicator';
+import { useAuth } from '../../hooks/auth';
 
 export interface CategoryTotal {
     key: string;
@@ -40,6 +40,8 @@ const Resume = () => {
     const [totalByCategories, setTotalByCategories] = useState<CategoryTotal[]>([])
     const theme = useTheme()
 
+    const { user } = useAuth()
+
     function handleDateChange(action: 'next' | 'prev') {
         let newDate;
         if (action === 'next') {
@@ -49,10 +51,10 @@ const Resume = () => {
         }
         setSelectedDate(newDate)
     }
-    
+
     async function loadData() {
         setIsLoading(true)
-        const dataKey = '@gofinances:transactions';
+        const dataKey = `@gofinances:transactions_user:${user.id}`
         const response = await AsyncStorage.getItem(dataKey)
         const transactionsFormatted: TransactionCardProps[] = response ? JSON.parse(response) : []
 
@@ -104,12 +106,7 @@ const Resume = () => {
     return <Container>
         <Header title='Resumo' />
         {isLoading ?
-            <LoadContainer>
-                <ActivityIndicator
-                    color={theme.colors.primary}
-                    size='large'
-                />
-            </LoadContainer>
+            <LoadIndicator />
             :
             <>
                 <MonthContainer >

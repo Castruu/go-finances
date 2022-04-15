@@ -1,11 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useFocusEffect } from '@react-navigation/native'
-import React, { useCallback, useEffect, useState } from 'react'
-import { ActivityIndicator } from 'react-native'
+import React, { useCallback, useState } from 'react'
 import { useTheme } from 'styled-components'
 
 import { HighlightCard } from '../../components/HighlightCard'
+import LoadIndicator from '../../components/LoadIndicator'
 import { TransactionCard, TransactionCardProps } from '../../components/TransactionCard'
+import { useAuth } from '../../hooks/auth'
 import numberToBRL from '../../utils/numberToBRL'
 import {
     Container,
@@ -22,7 +23,7 @@ import {
     Title,
     TransactionList,
     LogoutButton,
-    LoadContainer
+
 } from './styles'
 
 export interface DataListProps extends TransactionCardProps {
@@ -47,30 +48,33 @@ export function Dashboard() {
     const [isLoading, setIsLoading] = useState(true)
     const [transactions, setTransactions] = useState<DataListProps[]>([]);
     const [highlightData, setHighlitghtData] = useState<HighlightData>({} as HighlightData);
-    const theme = useTheme()
     const currentYear = new Date().getFullYear()
+
+    const { user, signOut } = useAuth()
 
     function getFirstAndLastDate(transactions: DataListProps[]) {
         const dataArray = transactions.map(transactions => new Date(transactions.date).getTime())
+        if(dataArray.length === 0) return 'Nenhum registro'
         const firstTransaction = new Date(Math.min.apply(Math, dataArray))
         const lastTransaction = new Date(Math.max.apply(Math, dataArray))
 
-        return `${firstTransaction.getDate()} de ${firstTransaction.toLocaleDateString('pt-BR', {month: 'long'})} de ${firstTransaction.getFullYear()} até ` +
-        `${lastTransaction.getDate()} de ${lastTransaction.toLocaleDateString('pt-BR', {month: 'long'})} de ${lastTransaction.getFullYear()}`
+        return `${firstTransaction.getDate()} de ${firstTransaction.toLocaleDateString('pt-BR', { month: 'long' })} de ${firstTransaction.getFullYear()} até ` +
+            `${lastTransaction.getDate()} de ${lastTransaction.toLocaleDateString('pt-BR', { month: 'long' })} de ${lastTransaction.getFullYear()}`
     }
 
     function getLastTransactionDate(collection: DataListProps[], type: 'positive' | 'negative') {
         const lastTransaction = Math.max.apply(Math,
             collection.filter(transaction => transaction.type === type)
                 .map(transactions => new Date(transactions.date).getTime()))
-        const lastDate = new Date(lastTransaction);
 
+        if (lastTransaction === -Infinity) return 'Nenhum registro'
+        const lastDate = new Date(lastTransaction);
         return `Última ${type === 'positive' ? 'entrada' : 'saída'} dia ${lastDate.getDate()} de ${lastDate.toLocaleString('pt-BR', { month: 'long' })}` +
-        `${currentYear !== lastDate.getFullYear() ? 'de ' + lastDate.getFullYear() : ''}`
+            `${currentYear !== lastDate.getFullYear() ? 'de ' + lastDate.getFullYear() : ''}`
     }
 
     async function loadTransactions() {
-        const dataKey = '@gofinances:transactions'
+        const dataKey = `@gofinances:transactions_user:${user.id}`
         const response = await AsyncStorage.getItem(dataKey);
         const transactions = response ? JSON.parse(response) : []
 
@@ -118,7 +122,7 @@ export function Dashboard() {
                 lastDate: getFirstAndLastDate(transactions)
             }
         })
-        setTransactions(transactionListFormatted)
+        setTransactions(transactionListFormatted.reverse())
         setIsLoading(false)
     }
 
@@ -130,29 +134,24 @@ export function Dashboard() {
     return (
         <Container>
             {isLoading ?
-                <LoadContainer>
-                    <ActivityIndicator
-                        color={theme.colors.primary}
-                        size='large'
-                    />
-                </LoadContainer>
+                <LoadIndicator />
                 :
                 <>
                     <Header>
                         <UserWrapper>
                             <UserInfo>
                                 <Photo
-                                    source={{ uri: 'https://avatars.githubusercontent.com/u/66087703?v=4' }}
+                                    source={{ uri: user.photo }}
                                 />
 
                                 <User>
                                     <UserGreeting>Olá, </UserGreeting>
-                                    <UserName>Vitor</UserName>
+                                    <UserName>{user.name}</UserName>
                                 </User>
 
                             </UserInfo>
 
-                            <LogoutButton onPress={() => { }}>
+                            <LogoutButton onPress={signOut}>
                                 <Icon name='power' />
                             </LogoutButton>
                         </UserWrapper>

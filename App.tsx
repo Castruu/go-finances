@@ -13,10 +13,10 @@ import {
 
 import { NavigationContainer } from '@react-navigation/native'
 import theme from './src/global/styles/theme';
-import { Register } from './src/screens/Register';
-import { AppRoutes } from './src/routes/app.routes';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
+import { AuthProvider, useAuth } from './src/hooks/auth';
+import { Routes } from './src/routes';
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -25,13 +25,15 @@ export default function App() {
     Poppins_700Bold
   });
 
-  return (fontsLoaded ?
+  const {isLoadingUser} = useAuth()
+
+  return (fontsLoaded && !isLoadingUser ?
     <GestureHandlerRootView style={{ flex: 1 }}>
       <ThemeProvider theme={theme}>
-        <NavigationContainer>
-          <StatusBar style='light'/>
-          <AppRoutes />
-        </NavigationContainer>
+        <StatusBar style='light'/>
+        <AuthProvider>
+          <Routes/>
+        </AuthProvider>
       </ThemeProvider>
     </GestureHandlerRootView>
     :
