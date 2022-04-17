@@ -1,5 +1,5 @@
 # go-finances
-GoFinances is a React Native application made with Rocketseat Ignite course. It is useful to log your transactions and controll it!
+GoFinances is a React Native application made in Rocketseat Ignite course. It is useful to log your transactions and controll it!
 
 #Used Technologies
 
